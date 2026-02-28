@@ -160,8 +160,49 @@ max-height:300px;
 </div>
 
 <script>
-const productosBase=["Aretes","Gorras","Brillos","Bolitrones","Slime",
-"Juguete Grande","Juguete Dinosaurio","Trompo","Balaca","Bolso","Cauchos"];
+const nombresProductos = [
+"Juguete Grande",
+"Juguete Dinosaurio",
+"Trompo",
+"Lego",
+"Slime",
+"Telefono",
+"Paq. Piquis",
+"Burbujas",
+"Gorras",
+"Aretes",
+"Balones grandes",
+"Balones Pequeños",
+"Caimanes",
+"Juguete Kuromi",
+"Pilas",
+"Balacas",
+"Espejos",
+"Bolso Mujer",
+"Bolso Hombre",
+"Hilos",
+"Moñas",
+"Pollos",
+"Alcancia Grande",
+"Alcancia pequeña",
+"Termo Caliente",
+"Vaso Niños",
+"Muñecas"
+];
+
+function generarPrecio() {
+    return Math.floor(Math.random() * (30000 - 1000 + 1)) + 1000;
+}
+
+let productos = JSON.parse(localStorage.getItem("productos"));
+
+if (!productos) {
+    productos = nombresProductos.map(nombre => ({
+        nombre: nombre,
+        precio: generarPrecio()
+    }));
+    localStorage.setItem("productos", JSON.stringify(productos));
+}
 
 let productos=[];
 let ventaTemp=null;
@@ -308,3 +349,4 @@ showSection("menu");
 
 </body>
 </html>
+
