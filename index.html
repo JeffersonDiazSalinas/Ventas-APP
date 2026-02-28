@@ -3,163 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ventas Business</title>
-
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>Sistema de Ventas</title>
 
 <style>
-:root{
---bg:#f5f5f7;
---card:#ffffff;
---text:#111;
---primary:#111;
---accent:#6366f1;
---soft:#e5e7eb;
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    padding: 20px;
 }
 
-body.dark{
---bg:#0f172a;
---card:#1e293b;
---text:#f1f5f9;
---primary:#f1f5f9;
---accent:#818cf8;
---soft:#334155;
+h1 {
+    text-align: center;
 }
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:system-ui,-apple-system;
+.card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-body{
-background:var(--bg);
-color:var(--text);
-transition:0.3s;
+select, input, button {
+    padding: 8px;
+    margin: 5px 0;
+    width: 100%;
 }
 
-header{
-padding:18px;
-text-align:center;
-font-weight:600;
-font-size:18px;
-background:var(--primary);
-color:var(--bg);
-display:flex;
-justify-content:space-between;
-align-items:center;
+button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
-.container{
-max-width:1000px;
-margin:auto;
-padding:20px;
+button:hover {
+    opacity: 0.9;
 }
 
-.card{
-background:var(--card);
-padding:20px;
-border-radius:16px;
-box-shadow:0 8px 25px rgba(0,0,0,0.05);
-margin-bottom:20px;
+table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-button{
-border:none;
-padding:10px 16px;
-border-radius:10px;
-cursor:pointer;
-margin:5px 5px 5px 0;
-font-size:14px;
-transition:0.2s;
+th, td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: center;
 }
 
-.btn-primary{background:var(--primary);color:var(--bg);}
-.btn-accent{background:var(--accent);color:white;}
-.btn-soft{background:var(--soft);color:var(--text);}
-
-.section{display:none;}
-
-.product{
-background:var(--soft);
-padding:10px;
-border-radius:10px;
-margin-bottom:8px;
+th {
+    background: #2563eb;
+    color: white;
 }
 
-.stats{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-}
-
-.stat{
-flex:1;
-min-width:150px;
-background:var(--soft);
-padding:12px;
-border-radius:12px;
-text-align:center;
-}
-
-canvas{
-max-height:300px;
-}
-
-@media(max-width:600px){
-.stats{flex-direction:column;}
+.total {
+    font-size: 20px;
+    font-weight: bold;
+    color: green;
 }
 </style>
 </head>
 <body>
 
-<header>
-💼 Ventas Business
-<button onclick="toggleDark()" class="btn-soft">🌙</button>
-</header>
-
-<div class="container">
-
-<div id="menu">
-<div class="card">
-<button class="btn-primary" onclick="showSection('registro')">Registrar Venta</button>
-<button class="btn-accent" onclick="showSection('historial')">Dashboard</button>
-</div>
-</div>
-
-<div id="registro" class="section">
-<div class="card">
-<h3>Nueva Venta</h3>
-<div id="productList"></div>
-<button class="btn-primary" onclick="validarVenta()">Validar</button>
-</div>
-<div id="resumen"></div>
-<button id="btnGuardar" class="btn-accent" style="display:none;" onclick="guardarVenta()">Guardar</button>
-<button class="btn-soft" onclick="showSection('menu')">Volver</button>
-</div>
-
-<div id="historial" class="section">
+<h1>Sistema de Ventas</h1>
 
 <div class="card">
-<h3>Estadísticas</h3>
-<div class="stats" id="estadisticas"></div>
+    <h3>Registrar Venta</h3>
+    <select id="productoSelect"></select>
+    <input type="number" id="cantidad" placeholder="Cantidad" min="1">
+    <button onclick="registrarVenta()">Registrar Venta</button>
 </div>
 
 <div class="card">
-<canvas id="grafica"></canvas>
+    <h3>Dashboard</h3>
+    <p>Total vendido:</p>
+    <p class="total" id="totalVendido">$0</p>
 </div>
 
-<div id="historialContenido"></div>
-
-<button class="btn-soft" onclick="showSection('menu')">Volver</button>
-
-</div>
-
+<div class="card">
+    <h3>Historial de Ventas</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody id="historial"></tbody>
+    </table>
 </div>
 
 <script>
+// ===== NUEVOS PRODUCTOS =====
 const nombresProductos = [
 "Juguete Grande",
 "Juguete Dinosaurio",
@@ -194,8 +132,8 @@ function generarPrecio() {
     return Math.floor(Math.random() * (30000 - 1000 + 1)) + 1000;
 }
 
+// Obtener productos guardados o crearlos
 let productos = JSON.parse(localStorage.getItem("productos"));
-
 if (!productos) {
     productos = nombresProductos.map(nombre => ({
         nombre: nombre,
@@ -204,149 +142,73 @@ if (!productos) {
     localStorage.setItem("productos", JSON.stringify(productos));
 }
 
-let productos=[];
-let ventaTemp=null;
-let chart=null;
+// Obtener ventas guardadas
+let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
 
-function generarProductos(){
-productos=productosBase.map(p=>({
-nombre:p,
-precio:Math.floor(Math.random()*20000)+3000
-}));
+// Cargar productos en el select
+function cargarProductos() {
+    const select = document.getElementById("productoSelect");
+    select.innerHTML = "";
+    productos.forEach((prod, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = prod.nombre + " - $" + prod.precio.toLocaleString();
+        select.appendChild(option);
+    });
 }
 
-function mostrarProductos(){
-let cont=document.getElementById("productList");
-cont.innerHTML="";
-productos.forEach((p,i)=>{
-cont.innerHTML+=`
-<div class="product">
-<label>
-<input type="checkbox" onchange="toggleCantidad(${i})">
-${p.nombre} - $${p.precio.toLocaleString()}
-</label>
-<div id="cant-${i}" style="display:none;">
-Cantidad <input type="number" min="1" value="1">
-</div>
-</div>`;
-});
+// Registrar venta
+function registrarVenta() {
+    const index = document.getElementById("productoSelect").value;
+    const cantidad = parseInt(document.getElementById("cantidad").value);
+
+    if (!cantidad || cantidad <= 0) {
+        alert("Ingresa una cantidad válida");
+        return;
+    }
+
+    const producto = productos[index];
+    const total = producto.precio * cantidad;
+
+    const venta = {
+        producto: producto.nombre,
+        cantidad: cantidad,
+        total: total
+    };
+
+    ventas.push(venta);
+    localStorage.setItem("ventas", JSON.stringify(ventas));
+
+    document.getElementById("cantidad").value = "";
+    mostrarVentas();
 }
 
-function toggleCantidad(i){
-let check=document.querySelectorAll("#productList input[type=checkbox]")[i];
-document.getElementById("cant-"+i).style.display=
-check.checked?"block":"none";
+// Mostrar historial
+function mostrarVentas() {
+    const tbody = document.getElementById("historial");
+    tbody.innerHTML = "";
+
+    let totalGeneral = 0;
+
+    ventas.forEach(v => {
+        totalGeneral += v.total;
+
+        const fila = `
+            <tr>
+                <td>${v.producto}</td>
+                <td>${v.cantidad}</td>
+                <td>$${v.total.toLocaleString()}</td>
+            </tr>
+        `;
+        tbody.innerHTML += fila;
+    });
+
+    document.getElementById("totalVendido").textContent = "$" + totalGeneral.toLocaleString();
 }
 
-function validarVenta(){
-let items=[],total=0;
-document.querySelectorAll("#productList input[type=checkbox]").forEach((c,i)=>{
-if(c.checked){
-let cant=parseInt(document.querySelector(`#cant-${i} input`).value);
-let subtotal=cant*productos[i].precio;
-total+=subtotal;
-items.push({nombre:productos[i].nombre,cantidad:cant,subtotal});
-}
-});
-if(items.length===0){alert("Selecciona productos");return;}
-ventaTemp={id:Date.now(),fecha:new Date().toISOString().split("T")[0],items,total};
-let html=`<div class="card"><h3>Resumen</h3>`;
-items.forEach(it=>html+=`<p>${it.nombre} x${it.cantidad} - $${it.subtotal.toLocaleString()}</p>`);
-html+=`<strong>Total: $${total.toLocaleString()}</strong></div>`;
-document.getElementById("resumen").innerHTML=html;
-document.getElementById("btnGuardar").style.display="inline-block";
-}
-
-function guardarVenta(){
-let historial=JSON.parse(localStorage.getItem("ventasBusiness"))||[];
-historial.push(ventaTemp);
-localStorage.setItem("ventasBusiness",JSON.stringify(historial));
-ventaTemp=null;
-document.getElementById("resumen").innerHTML="";
-document.getElementById("btnGuardar").style.display="none";
-generarProductos();
-mostrarProductos();
-alert("Venta guardada ✅");
-}
-
-function mostrarHistorial(){
-let historial=JSON.parse(localStorage.getItem("ventasBusiness"))||[];
-let cont=document.getElementById("historialContenido");
-cont.innerHTML="";
-if(historial.length===0){
-cont.innerHTML="<div class='card'>No hay ventas.</div>";
-return;
-}
-
-let totalGeneral=0;
-let ventasPorDia={};
-
-historial.forEach(v=>{
-totalGeneral+=v.total;
-if(!ventasPorDia[v.fecha]) ventasPorDia[v.fecha]=0;
-ventasPorDia[v.fecha]+=v.total;
-
-let card=`<div class="card"><h4>${v.fecha}</h4>`;
-v.items.forEach(it=>{
-card+=`<p>${it.nombre} x${it.cantidad} - $${it.subtotal.toLocaleString()}</p>`;
-});
-card+=`<strong>Total: $${v.total.toLocaleString()}</strong></div>`;
-cont.innerHTML+=card;
-});
-
-document.getElementById("estadisticas").innerHTML=`
-<div class="stat"><strong>Total Ventas</strong><br>${historial.length}</div>
-<div class="stat"><strong>Total General</strong><br>$${totalGeneral.toLocaleString()}</div>
-`;
-
-crearGrafica(ventasPorDia);
-}
-
-function crearGrafica(data){
-let ctx=document.getElementById("grafica").getContext("2d");
-if(chart) chart.destroy();
-chart=new Chart(ctx,{
-type:"bar",
-data:{
-labels:Object.keys(data),
-datasets:[{
-label:"Ventas por Día",
-data:Object.values(data),
-backgroundColor:"#6366f1"
-}]
-},
-options:{responsive:true}
-});
-}
-
-function showSection(id){
-document.getElementById("menu").style.display="none";
-document.getElementById("registro").style.display="none";
-document.getElementById("historial").style.display="none";
-
-if(id==="menu") document.getElementById("menu").style.display="block";
-if(id==="registro"){
-document.getElementById("registro").style.display="block";
-generarProductos();
-mostrarProductos();
-}
-if(id==="historial"){
-document.getElementById("historial").style.display="block";
-mostrarHistorial();
-}
-}
-
-function toggleDark(){
-document.body.classList.toggle("dark");
-}
-
-if(window.matchMedia('(prefers-color-scheme: dark)').matches){
-document.body.classList.add("dark");
-}
-
-showSection("menu");
+cargarProductos();
+mostrarVentas();
 </script>
 
 </body>
 </html>
-
